@@ -805,9 +805,41 @@ fun PopularClipsScreen(
                                                     playingClipId = clip.id
                                                     isPreviewLoading = true
                                                     previewPlayer.stop()
-                                                    previewPlayer.setMediaItem(MediaItem.fromUri(clip.audioUrl))
-                                                    previewPlayer.prepare()
-                                                    previewPlayer.playWhenReady = true
+                                                    
+                                                    val isSocialUrl = clip.audioUrl.contains("youtube.com") || clip.audioUrl.contains("youtu.be") || clip.audioUrl.contains("tiktok.com") || clip.audioUrl.contains("instagram.com")
+                                                    if (isSocialUrl) {
+                                                        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                                                            try {
+                                                                com.yausername.youtubedl_android.YoutubeDL.getInstance().init(context)
+                                                                val request = com.yausername.youtubedl_android.YoutubeDLRequest(clip.audioUrl)
+                                                                request.addOption("-g")
+                                                                request.addOption("-f", "bestaudio")
+                                                                val response = com.yausername.youtubedl_android.YoutubeDL.getInstance().execute(request, null)
+                                                                val directUrl = response.out.lines().firstOrNull { it.isNotBlank() }
+                                                                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                                                    if (directUrl != null && playingClipId == clip.id) {
+                                                                        previewPlayer.setMediaItem(androidx.media3.common.MediaItem.fromUri(directUrl))
+                                                                        previewPlayer.prepare()
+                                                                        previewPlayer.playWhenReady = true
+                                                                    } else {
+                                                                        if (playingClipId == clip.id) isPreviewLoading = false
+                                                                        playingClipId = null
+                                                                        Toast.makeText(context, if (isArabic) "فشل استخراج العينة" else "Failed to extract sample", Toast.LENGTH_SHORT).show()
+                                                                    }
+                                                                }
+                                                            } catch (e: Exception) {
+                                                                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                                                    if (playingClipId == clip.id) isPreviewLoading = false
+                                                                    playingClipId = null
+                                                                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                                }
+                                                            }
+                                                        }
+                                                    } else {
+                                                        previewPlayer.setMediaItem(androidx.media3.common.MediaItem.fromUri(clip.audioUrl))
+                                                        previewPlayer.prepare()
+                                                        previewPlayer.playWhenReady = true
+                                                    }
                                                 }
                                             }
                                         },
@@ -1166,30 +1198,30 @@ fun PopularClipsScreen(
                                         if (result.reciterName.isNotBlank() && result.reciterName != "Unknown") {
                                             addReciter = result.reciterName
                                         }
-                                    } else {
-                                        Toast.makeText(context, if (isArabic) "فشل في التعرف على المقطع، سنستخدم البيانات الحالية" else "AI failed, saving current data", Toast.LENGTH_SHORT).show()
-                                    }
-                                    
-                                    if (addTitle.isBlank()) {
-                                        addTitle = "تلاوة - ${addReciter.ifBlank { "يوتيوب" }}"
-                                    }
-                                    
-                                    baseClipsList.add(
-                                        CuratedClip(
-                                            id = "clip_custom_${System.currentTimeMillis()}",
-                                            reciter = addReciter.ifBlank { "مقرئ Youtube" },
-                                            reciterId = "youtube|$addUrl",
-                                            title = addTitle,
-                                            surah = addSurahStr.toIntOrNull() ?: 1,
-                                            ayahStart = addStartStr.toIntOrNull() ?: 1,
-                                            ayahEnd = addEndStr.toIntOrNull() ?: 1,
-                                            audioUrl = addUrl,
-                                            category = addCategory,
-                                            videoQuery = if (addVideoQuery.isBlank()) "quran+recitation" else addVideoQuery
+                                        
+                                        if (addTitle.isBlank()) {
+                                            addTitle = "تلاوة - ${addReciter.ifBlank { "يوتيوب" }}"
+                                        }
+                                        
+                                        baseClipsList.add(
+                                            CuratedClip(
+                                                id = "clip_custom_${System.currentTimeMillis()}",
+                                                reciter = addReciter.ifBlank { "مقرئ Youtube" },
+                                                reciterId = "youtube|$addUrl",
+                                                title = addTitle,
+                                                surah = addSurahStr.toIntOrNull() ?: 1,
+                                                ayahStart = addStartStr.toIntOrNull() ?: 1,
+                                                ayahEnd = addEndStr.toIntOrNull() ?: 1,
+                                                audioUrl = addUrl,
+                                                category = addCategory,
+                                                videoQuery = if (addVideoQuery.isBlank()) "quran+recitation" else addVideoQuery
+                                            )
                                         )
-                                    )
-                                    showAddDialog = false
-                                    Toast.makeText(context, if (isArabic) "تمت إضافة المقطع بنجاح!" else "Clip added successfully", Toast.LENGTH_SHORT).show()
+                                        showAddDialog = false
+                                        Toast.makeText(context, if (isArabic) "تمت إضافة المقطع بنجاح!" else "Clip added successfully", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(context, if (isArabic) "فشل جلب البيانات بالذكاء الاصطناعي، يرجى المحاولة مجدداً أو التأكد من الرابط" else "AI failed to fetch data, please try again or check the link", Toast.LENGTH_LONG).show()
+                                    }
                                 } catch (e: Exception) {
                                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                                 }

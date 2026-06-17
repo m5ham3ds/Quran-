@@ -90,19 +90,6 @@ fun SocialMediaScreen(isArabic: Boolean) {
     var showGoogleOauthDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { 
-                    Text(
-                        text = if (isArabic) "النشر والربط التلقائي" else "Publish & Social Integration", 
-                        color = LuxuryGold, 
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    ) 
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = ScreenBg)
-            )
-        },
         containerColor = ScreenBg,
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
@@ -111,7 +98,7 @@ fun SocialMediaScreen(isArabic: Boolean) {
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Main informative header

@@ -128,6 +128,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ReelHeader(
     isArabic: Boolean,
+    pageTitle: String,
     onMenuClick: () -> Unit
 ) {
     Surface(
@@ -135,13 +136,12 @@ fun ReelHeader(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .border(width = 1.dp, color = BorderColor)
+            .border(width = 1.dp, color = BorderColor, shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -150,7 +150,7 @@ fun ReelHeader(
                     imageVector = Icons.Default.Menu,
                     contentDescription = if (isArabic) "القائمة" else "Menu",
                     tint = LuxuryGold,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(32.dp)
                 )
             }
             
@@ -158,9 +158,9 @@ fun ReelHeader(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = if (isArabic) "صانع ريلز القرآن الكريـم" else "Quran Reels Maker",
+                    text = if (isArabic) "صانع ريلز القرآن الكريم" else "Quran Reels Maker",
                     color = LuxuryGold,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp
                 )
@@ -170,6 +170,22 @@ fun ReelHeader(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Normal
                 )
+                if (pageTitle.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .border(1.dp, TextMutedColor, RoundedCornerShape(16.dp))
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = pageTitle,
+                            color = LuxuryGold,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             }
             
             Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
@@ -177,7 +193,7 @@ fun ReelHeader(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
                     tint = LuxuryGold.copy(alpha = 0.6f),
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -305,8 +321,17 @@ fun MainNavigationScaffold(
     ) {
         Scaffold(
             topBar = {
+                val pageTitle = when (selectedTab) {
+                    "home" -> if (isArabic) "الرئيسية" else "Home"
+                    "popular" -> if (isArabic) "الرائجة" else "Trending"
+                    "font" -> if (isArabic) "تنسيق الخط" else "Font Style"
+                    "social" -> if (isArabic) "النشر والربط" else "Publishing"
+                    "settings" -> if (isArabic) "الإعدادات" else "Settings"
+                    else -> ""
+                }
                 ReelHeader(
                     isArabic = isArabic,
+                    pageTitle = pageTitle,
                     onMenuClick = {
                         scope.launch {
                             if (drawerState.isClosed) drawerState.open() else drawerState.close()
@@ -1417,35 +1442,34 @@ fun FontFormattingScreen(settingsManager: SettingsManager, isArabic: Boolean) {
     }
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(if (isArabic) "تنسيق الخط والترجمة" else "Font & Subtitles Style", fontWeight = FontWeight.Bold, color = LuxuryGold, fontSize = 20.sp) },
-                navigationIcon = {
-                    IconButton(onClick = { showAddFontDialog = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Font", tint = LuxuryGold)
-                    }
-                },
-                actions = {
-                    TextButton(onClick = {
-                        Toast.makeText(context, if (isArabic) "تم حفظ التنسيق تلقائياً" else "Style saved automatically", Toast.LENGTH_SHORT).show()
-                    }) {
-                        Text(if (isArabic) "حفظ" else "Save", color = LuxuryGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = ScreenBg)
-            )
-        },
         containerColor = ScreenBg,
         modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 8.dp),
+                .padding(horizontal = 20.dp, vertical = 0.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = { showAddFontDialog = true }) {
+                    Icon(Icons.Default.Add, contentDescription = "Add Font", tint = LuxuryGold)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(if (isArabic) "إضافة خط مخصص" else "Add Custom Font", color = LuxuryGold, fontWeight = FontWeight.Bold)
+                }
+                TextButton(onClick = {
+                    Toast.makeText(context, if (isArabic) "تم حفظ التنسيق تلقائياً" else "Style saved automatically", Toast.LENGTH_SHORT).show()
+                }) {
+                    Text(if (isArabic) "حفظ" else "Save", color = LuxuryGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
+            }
+            
             // Section 1: الخط الأساسي
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardBg),
