@@ -99,7 +99,7 @@ class GeminiMetaGenerator {
         }
 
         val requestBody = jsonRequest.toString().toRequestBody("application/json".toMediaType())
-        val apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
+        val apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=$apiKey"
         
         val request = Request.Builder()
             .url(apiUrl)
@@ -222,7 +222,7 @@ class GeminiMetaGenerator {
         }
 
         val requestBody = jsonRequest.toString().toRequestBody("application/json".toMediaType())
-        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=$apiKey"
+        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
         
         val request = Request.Builder()
             .url(url)
