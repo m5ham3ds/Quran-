@@ -1198,6 +1198,15 @@ fun PopularClipsScreen(
                                         if (result.reciterName.isNotBlank() && result.reciterName != "Unknown") {
                                             addReciter = result.reciterName
                                         }
+                                        if (result.title.isNotBlank()) {
+                                            addTitle = result.title
+                                        }
+                                        if (result.videoQuery.isNotBlank()) {
+                                            addVideoQuery = result.videoQuery
+                                        }
+                                        if (result.category.isNotBlank()) {
+                                            addCategory = result.category
+                                        }
                                         
                                         if (addTitle.isBlank()) {
                                             addTitle = "تلاوة - ${addReciter.ifBlank { "يوتيوب" }}"

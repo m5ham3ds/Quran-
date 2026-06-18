@@ -29,7 +29,10 @@ data class ClipAnalysisResult(
     val surah: Int,
     val startAyah: Int,
     val endAyah: Int,
-    val reciterName: String
+    val reciterName: String,
+    val title: String = "",
+    val videoQuery: String = "",
+    val category: String = ""
 )
 
 class GeminiMetaGenerator {
@@ -58,19 +61,29 @@ class GeminiMetaGenerator {
         }
 
         val prompt = """
-            You are an expert Islamic AI assistant. I have a video link: $url
-            Please identify the Quranic recitation in this video to the best of your ability.
-            Identify the Surah number, start Ayah number, end Ayah number, and the Reciter's name.
-            If you are not 100% sure, make your best guess based on standard recitations and short clips.
+            اود منك ان تقوم بفتح هذا الرابط و تقوم باخباري من اي سورة هذ الايات المتلوى و من اي اية بدأ و اي اية انتهت بها المقطع و اسم القارئ او الشيخ اتوقعان تقوم بكتابة لي النتائج كتالي دون اي تعديل
+            اسم السورة : ❤️هنا اسم السورة ❤️
+            اسم القارئ او الشيخ : 😌هنا اسم القارئ او الشيخ 😌
+            الاية اللتي بدأ بدها المقطع : 🤤هنا اية البداية 🤤
+            اية النهاية او الاية اللتي انتهاء بها المقطع : 🤲هنا الاية النهائية او الاية اللتي انتهاية بهاية المقطع 🤲
+            كذالك هناك العنوان و انت قم باحتراح كلمات مفتاحية للبحث بها في موقع Pixabay و Pexels
+            كذالك يتم اختيار اذا كان من فئة الاطمئنان او الشخوع او السكنية او الدعاء أيضا بكش تلقائي
+
+            الرابط: $url
             
-            Return ONLY a valid JSON object with the following keys and EXACTLY these types (integer for surah/ayah, string for reciter):
+            ملاحظة للمبرمج: يرجى كتابة الرد بالصيغة المطلوبة بالأعلى، ثم إرفاق كود JSON في النهاية (لتسهيل قراءته برمجياً) מכיל القيم التالية:
+            ```json
             {
                 "surahNumber": 1,
                 "startAyah": 1,
                 "endAyah": 7,
-                "reciterName": "Mishary Alafasy"
+                "reciterName": "...",
+                "title": "...",
+                "videoQuery": "...",
+                "category": "..."
             }
-            Do not include any other text, markdown, or explanation.
+            ```
+            (اجعل surahNumber و startAyah و endAyah أرقام صحيحة integer)
         """.trimIndent()
 
         val jsonRequest = JSONObject().apply {
@@ -93,8 +106,7 @@ class GeminiMetaGenerator {
             })
             
             put("generationConfig", JSONObject().apply {
-                put("responseMimeType", "application/json")
-                put("temperature", 0.2)
+                put("temperature", 0.3)
             })
         }
 
@@ -119,20 +131,53 @@ class GeminiMetaGenerator {
                     if (parts.length() > 0) {
                         val rawText = parts.getJSONObject(0).getString("text").trim()
                         
-                        val cleanText = if (rawText.startsWith("```json")) {
-                            rawText.substringAfter("```json").substringBeforeLast("```").trim()
-                        } else if (rawText.startsWith("```")) {
-                            rawText.substringAfter("```").substringBeforeLast("```").trim()
-                        } else {
-                            rawText
+                        var surahNum = 1
+                        var startA = 1
+                        var endA = 1
+                        var reciter = "Unknown"
+                        var title = ""
+                        var query = ""
+                        var category = ""
+
+                        // 1. Try to parse JSON from the response block
+                        try {
+                            val cleanText = if (rawText.contains("```json")) {
+                                rawText.substringAfter("```json").substringBeforeLast("```").trim()
+                            } else if (rawText.contains("```")) {
+                                rawText.substringAfterLast("```").substringBeforeLast("```").trim() // generic fallback
+                            } else {
+                                rawText.substringAfterLast("{").let { "{$it" }
+                            }
+                            
+                            val metaJson = JSONObject(cleanText)
+                            surahNum = metaJson.optInt("surahNumber", 1)
+                            startA = metaJson.optInt("startAyah", 1)
+                            endA = metaJson.optInt("endAyah", 1)
+                            reciter = metaJson.optString("reciterName", "")
+                            title = metaJson.optString("title", "")
+                            query = metaJson.optString("videoQuery", "")
+                            category = metaJson.optString("category", "")
+                        } catch (e: Exception) {
+                            // 2. Fallback to parsing text/emojis if JSON fails
+                            val reciterRegex = Regex("😌(.*?)😌")
+                            val startRegex = Regex("🤤(.*?)🤤")
+                            val endRegex = Regex("🤲(.*?)🤲")
+                            
+                            reciterRegex.find(rawText)?.groupValues?.get(1)?.trim()?.let { reciter = it }
+                            startRegex.find(rawText)?.groupValues?.get(1)?.trim()?.toIntOrNull()?.let { startA = it }
+                            endRegex.find(rawText)?.groupValues?.get(1)?.trim()?.toIntOrNull()?.let { endA = it }
                         }
                         
-                        val metaJson = JSONObject(cleanText)
+                        if (reciter.isBlank()) reciter = "Unknown"
+
                         return@withContext ClipAnalysisResult(
-                            surah = metaJson.optInt("surahNumber", 1),
-                            startAyah = metaJson.optInt("startAyah", 1),
-                            endAyah = metaJson.optInt("endAyah", 1),
-                            reciterName = metaJson.optString("reciterName", "Unknown")
+                            surah = surahNum,
+                            startAyah = startA,
+                            endAyah = endA,
+                            reciterName = reciter,
+                            title = title,
+                            videoQuery = query,
+                            category = category
                         )
                     }
                 }

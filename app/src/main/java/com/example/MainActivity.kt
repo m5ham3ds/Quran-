@@ -164,12 +164,6 @@ fun ReelHeader(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp
                 )
-                Text(
-                    text = if (isArabic) "مونتاج سينمائي ذكي" else "Cinematic Smart Editor",
-                    color = TextMutedColor,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Normal
-                )
                 if (pageTitle.isNotBlank()) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Box(
