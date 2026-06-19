@@ -98,7 +98,7 @@ class GeminiMetaGenerator {
         }
 
         val requestBody = jsonRequest.toString().toRequestBody("application/json".toMediaType())
-        val apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=$apiKey"
+        val apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=$apiKey"
         
         val request = Request.Builder()
             .url(apiUrl)

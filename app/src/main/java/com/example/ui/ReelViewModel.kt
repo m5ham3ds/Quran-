@@ -410,17 +410,23 @@ class ReelViewModel(application: Application) : AndroidViewModel(application) {
     
     private fun fetchReciters() {
         val list = listOf(
-            "ar.islamsobhi" to "إسلام صبحي (Islam Sobhi)",
-            "ar.hazzaalblushi" to "هزاع البلوشي (Hazza Al Blushi)",
-            "ar.yasseradosari" to "ياسر الدوسري (Yasser Al Dosari)",
-            "ar.nasserallqatami" to "ناصر القطامي (Nasser Al Qatami)",
-            "ar.alafasy" to "مشاري العفاسي (Mishary Alafasy)",
+            "ar.abdullahbasfar" to "عبد الله بصفر (Abdullah Basfar)",
+            "ar.abdurrahmaansudais" to "عبدالرحمن السديس (Abdurrahmaan As-Sudais)",
+            "ar.abdulsamad" to "عبدالباسط عبدالصمد (Abdul Samad)",
+            "ar.shaatree" to "أبو بكر الشاطري (Abu Bakr Ash-Shaatree)",
+            "ar.ahmedajamy" to "أحمد بن علي العجمي (Ahmed ibn Ali al-Ajamy)",
+            "ar.alafasy" to "مشاري العفاسي (Alafasy)",
+            "ar.hanirifai" to "هاني الرفاعي (Hani Rifai)",
+            "ar.husary" to "محمود خليل الحصري (Husary)",
+            "ar.husarymujawwad" to "محمود خليل الحصري - المجود (Husary Mujawwad)",
+            "ar.hudhaify" to "علي بن عبدالرحمن الحذيفي (Hudhaify)",
+            "ar.ibrahimakhbar" to "إبراهيم الأخضر (Ibrahim Akhdar)",
             "ar.mahermuaiqly" to "ماهر المعيقلي (Maher Al Muaiqly)",
-            "ar.saadghamdi" to "سعد الغامدي (Saad Al Ghamdi)",
-            "ar.faresabbad" to "فارس عباد (Fares Abbad)",
-            "ar.abdulbasitmurattal" to "عبد الباسط عبد الصمد (Abdul Basit Abdul Samad)",
-            "ar.minshawi" to "محمد صديق المنشاوي (Mohamed Siddiq Minshawi)",
-            "ar.husary" to "محمود خليل الحصري (Mahmoud Khalil Al-Husary)"
+            "ar.muhammadayyoub" to "محمد أيوب (Muhammad Ayyoub)",
+            "ar.muhammadjibreel" to "محمد جبريل (Muhammad Jibreel)",
+            "ar.saoodshuraym" to "سعود الشريم (Saood bin Ibraaheem Ash-Shuraym)",
+            "ar.parhizgar" to "شهریار پرهیزگار (Parhizgar)",
+            "ar.aymanswoaid" to "أيمن سويد (Ayman Sowaid)"
         )
         _reciters.value = list
     }
