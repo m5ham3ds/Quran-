@@ -141,7 +141,7 @@ fun ReelHeader(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -150,7 +150,7 @@ fun ReelHeader(
                     imageVector = Icons.Default.Menu,
                     contentDescription = if (isArabic) "القائمة" else "Menu",
                     tint = LuxuryGold,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
             
@@ -160,22 +160,21 @@ fun ReelHeader(
                 Text(
                     text = if (isArabic) "صانع ريلز القرآن الكريم" else "Quran Reels Maker",
                     color = LuxuryGold,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
                 )
                 if (pageTitle.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Box(
                         modifier = Modifier
-                            .border(1.dp, TextMutedColor, RoundedCornerShape(16.dp))
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                            .border(1.dp, LuxuryGold.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 12.dp, vertical = 2.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = pageTitle,
-                            color = LuxuryGold,
-                            fontSize = 14.sp,
+                            color = LuxuryGold.copy(alpha = 0.9f),
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }

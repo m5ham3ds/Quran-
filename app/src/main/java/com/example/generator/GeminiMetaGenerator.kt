@@ -62,28 +62,15 @@ class GeminiMetaGenerator {
 
         val prompt = """
             اود منك ان تقوم بفتح هذا الرابط و تقوم باخباري من اي سورة هذ الايات المتلوى و من اي اية بدأ و اي اية انتهت بها المقطع و اسم القارئ او الشيخ اتوقعان تقوم بكتابة لي النتائج كتالي دون اي تعديل
-            اسم السورة : ❤️هنا اسم السورة ❤️
+            رقم السورة المحددة : ❤️هنا ضع رقم السورة فقط كـرقم (مثل 1 للفاتحة، 2 للبقرة)❤️
             اسم القارئ او الشيخ : 😌هنا اسم القارئ او الشيخ 😌
             الاية اللتي بدأ بدها المقطع : 🤤هنا اية البداية 🤤
             اية النهاية او الاية اللتي انتهاء بها المقطع : 🤲هنا الاية النهائية او الاية اللتي انتهاية بهاية المقطع 🤲
-            كذالك هناك العنوان و انت قم باحتراح كلمات مفتاحية للبحث بها في موقع Pixabay و Pexels
-            كذالك يتم اختيار اذا كان من فئة الاطمئنان او الشخوع او السكنية او الدعاء أيضا بكش تلقائي
+            العنوان : ✏️هنا العنوان المناسب✏️
+            كلمات بحث لخلفية مناسبة: 🔍هنا الكلمات المفتاحية بالانجليزية للبحث في بيكسلز/بيكساباي🔍
+            التصنيف : 🏷️هنا التصنيف (طمأنينة أو خشوع أو سكينة أو دعاء)🏷️
 
             الرابط: $url
-            
-            ملاحظة للمبرمج: يرجى كتابة الرد بالصيغة المطلوبة بالأعلى، ثم إرفاق كود JSON في النهاية (لتسهيل قراءته برمجياً) מכיל القيم التالية:
-            ```json
-            {
-                "surahNumber": 1,
-                "startAyah": 1,
-                "endAyah": 7,
-                "reciterName": "...",
-                "title": "...",
-                "videoQuery": "...",
-                "category": "..."
-            }
-            ```
-            (اجعل surahNumber و startAyah و endAyah أرقام صحيحة integer)
         """.trimIndent()
 
         val jsonRequest = JSONObject().apply {
@@ -123,6 +110,9 @@ class GeminiMetaGenerator {
             if (response.isSuccessful) {
                 val responseStr = response.body?.string() ?: ""
                 val rootJson = JSONObject(responseStr)
+                if (rootJson.has("error")) {
+                    throw Exception(rootJson.getJSONObject("error").getString("message"))
+                }
                 val candidates = rootJson.getJSONArray("candidates")
                 if (candidates.length() > 0) {
                     val candidate = candidates.getJSONObject(0)
@@ -139,33 +129,28 @@ class GeminiMetaGenerator {
                         var query = ""
                         var category = ""
 
-                        // 1. Try to parse JSON from the response block
                         try {
-                            val cleanText = if (rawText.contains("```json")) {
-                                rawText.substringAfter("```json").substringBeforeLast("```").trim()
-                            } else if (rawText.contains("```")) {
-                                rawText.substringAfterLast("```").substringBeforeLast("```").trim() // generic fallback
-                            } else {
-                                rawText.substringAfterLast("{").let { "{$it" }
-                            }
-                            
-                            val metaJson = JSONObject(cleanText)
-                            surahNum = metaJson.optInt("surahNumber", 1)
-                            startA = metaJson.optInt("startAyah", 1)
-                            endA = metaJson.optInt("endAyah", 1)
-                            reciter = metaJson.optString("reciterName", "")
-                            title = metaJson.optString("title", "")
-                            query = metaJson.optString("videoQuery", "")
-                            category = metaJson.optString("category", "")
-                        } catch (e: Exception) {
-                            // 2. Fallback to parsing text/emojis if JSON fails
+                            val surahRegex = Regex("❤️(.*?)❤️")
                             val reciterRegex = Regex("😌(.*?)😌")
                             val startRegex = Regex("🤤(.*?)🤤")
                             val endRegex = Regex("🤲(.*?)🤲")
+                            val titleRegex = Regex("✏️(.*?)✏️")
+                            val queryRegex = Regex("🔍(.*?)🔍")
+                            val categoryRegex = Regex("🏷️(.*?)🏷️")
                             
+                            val surahMatch = surahRegex.find(rawText)?.groupValues?.get(1)?.trim()
+                            if (surahMatch != null) {
+                                surahNum = surahMatch.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 1
+                            }
                             reciterRegex.find(rawText)?.groupValues?.get(1)?.trim()?.let { reciter = it }
-                            startRegex.find(rawText)?.groupValues?.get(1)?.trim()?.toIntOrNull()?.let { startA = it }
-                            endRegex.find(rawText)?.groupValues?.get(1)?.trim()?.toIntOrNull()?.let { endA = it }
+                            startRegex.find(rawText)?.groupValues?.get(1)?.trim()?.replace(Regex("[^0-9]"), "")?.toIntOrNull()?.let { startA = it }
+                            endRegex.find(rawText)?.groupValues?.get(1)?.trim()?.replace(Regex("[^0-9]"), "")?.toIntOrNull()?.let { endA = it }
+                            titleRegex.find(rawText)?.groupValues?.get(1)?.trim()?.let { title = it }
+                            queryRegex.find(rawText)?.groupValues?.get(1)?.trim()?.let { query = it }
+                            categoryRegex.find(rawText)?.groupValues?.get(1)?.trim()?.let { category = it }
+
+                        } catch (e: Exception) {
+                            throw Exception("فشل في استخراج البيانات من الرد: ${e.message}")
                         }
                         
                         if (reciter.isBlank()) reciter = "Unknown"
@@ -181,9 +166,12 @@ class GeminiMetaGenerator {
                         )
                     }
                 }
+            } else {
+                throw Exception("فشل الاتصال بـ Gemini API: HTTP ${response.code}\n${response.body?.string()}")
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            throw Exception(e.message ?: "حدث خطأ غير معروف")
         }
         return@withContext null
     }

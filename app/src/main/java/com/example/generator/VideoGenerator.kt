@@ -2217,7 +2217,7 @@ class VideoGenerator {
 
             SystemDiagnosticTracker.addLog("WHISPERX_API", "بدء جلب وفحص المواءمة بشكل متتالي عبر معرف الحدث: $eventId")
             var attempt = 0
-            while (attempt < 60) {
+            while (attempt < 15) {
                 var completedData: String? = null
                 try {
                     val eventResponse = client.newCall(eventRequest).execute()
@@ -2304,7 +2304,7 @@ class VideoGenerator {
         } catch (e: Exception) {
             SystemDiagnosticTracker.addLog("ERROR", "خطأ فادح أثناء مزامنة WhisperX للآية: ${e.message}")
             e.printStackTrace()
-            throw e
+            throw Exception("فشل الاتصال بخادم WhisperX هل تود معاودة الاتصال ام الغاء العملية بالكامل (رمز الخطأ: ${e.message})")
         }
         return wordSegments
     }
